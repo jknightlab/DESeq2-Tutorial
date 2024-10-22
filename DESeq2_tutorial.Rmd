@@ -11,9 +11,15 @@ With reference to the offical DESeq2 package
 
 <https://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html>
 
-plus additionally;
+other resources used;
 
-## Data pre-processing In this practical, we will look at some RNA-Seq data from the Ankylosing Spondylitis Paper
+<https://swebb1.github.io/RNA-seq_workshop/lesson3_deseq.html>
+
+<https://ashleyschwartz.com/posts/2023/05/deseq2-tutorial>
+
+
+### Data pre-processing In this practical
+We will look at some RNA-Seq data from the Ankylosing Spondylitis Paper
 
 <https://www.cell.com/cell-genomics/fulltext/S2666-979X%2823%2900072-1>
 
