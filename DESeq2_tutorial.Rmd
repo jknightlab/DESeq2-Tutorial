@@ -251,30 +251,31 @@ Here we perform pre-filtering to keep only rows that have a count of at least 10
 
 
 ```{r filter-deseq-lowreads, include=TRUE , eval=FALSE}
-# Display a table of the counts of each group in the 'set' column of the sample metadata (coldata)
-# This allows us to see how many samples belong to each group, which helps in deciding the filtering criteria
-table(coldata$set) 
-
-# Define the minimum group size for filtering low count genes
-# Here, we set the smallest acceptable size of the groups to 4
-smallestGroupSize <- 4
-
-# Create a logical vector 'keep' indicating which genes to keep
-# 'rowSums(counts(dds) >= 10)' calculates the number of samples where the gene count is greater than or equal to 10
-# We want to keep genes that have counts >= 10 in at least 'smallestGroupSize' samples
-keep <- rowSums(counts(dds) >= 10) >= smallestGroupSize
-
-# Subset the DESeqDataSet 'dds' to keep only the genes that meet the filtering criteria
-# 'dds[keep,]' retains only the rows (genes) corresponding to TRUE values in 'keep'
-dds <- dds[keep,]
-
-
-# An alternative approach to filter out low count genes
 # This line would subset the DESeqDataSet 'dds' to keep only the genes that have a total count greater than 10 across all samples
 # 'rowSums(counts(dds)) > 10' creates a logical vector that is TRUE for genes with total counts greater than 10
 # This method effectively removes any gene that has fewer than 10 total reads across all samples
 # However, this approach is not executed in the current code (commented out)
-# dds <- dds[rowSums(counts(dds)) > 10,]
+dds <- dds[rowSums(counts(dds)) > 10,]
+
+# An alternative approach to filter out low count genes based on the minimum group size
+
+# Display a table of the counts of each group in the 'set' column of the sample metadata (coldata)
+# This allows us to see how many samples belong to each group, which helps in deciding the filtering criteria
+# table(coldata$set) 
+
+# Define the minimum group size for filtering low count genes
+# Here, we set the smallest acceptable size of the groups to 4
+# smallestGroupSize <- 4
+
+# Create a logical vector 'keep' indicating which genes to keep
+# 'rowSums(counts(dds) >= 10)' calculates the number of samples where the gene count is greater than or equal to 10
+# We want to keep genes that have counts >= 10 in at least 'smallestGroupSize' samples
+# keep <- rowSums(counts(dds) >= 10) >= smallestGroupSize
+
+# Subset the DESeqDataSet 'dds' to keep only the genes that meet the filtering criteria
+# 'dds[keep,]' retains only the rows (genes) corresponding to TRUE values in 'keep'
+# dds <- dds[keep,]
+
 ```
 
 ## Differential expression analysis

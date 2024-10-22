@@ -608,30 +608,30 @@ one can use the minimal number of samples where non-zero counts would be
 considered interesting. One can also omit this step entirely and just
 rely on the independent filtering procedures available in results(),
 either IHW or genefilter.</p>
-<pre class="r"><code># Display a table of the counts of each group in the &#39;set&#39; column of the sample metadata (coldata)
+<pre class="r"><code># This line would subset the DESeqDataSet &#39;dds&#39; to keep only the genes that have a total count greater than 10 across all samples
+# &#39;rowSums(counts(dds)) &gt; 10&#39; creates a logical vector that is TRUE for genes with total counts greater than 10
+# This method effectively removes any gene that has fewer than 10 total reads across all samples
+# However, this approach is not executed in the current code (commented out)
+dds &lt;- dds[rowSums(counts(dds)) &gt; 10,]
+
+# An alternative approach to filter out low count genes based on the minimum group size
+
+# Display a table of the counts of each group in the &#39;set&#39; column of the sample metadata (coldata)
 # This allows us to see how many samples belong to each group, which helps in deciding the filtering criteria
-table(coldata$set) 
+# table(coldata$set) 
 
 # Define the minimum group size for filtering low count genes
 # Here, we set the smallest acceptable size of the groups to 4
-smallestGroupSize &lt;- 4
+# smallestGroupSize &lt;- 4
 
 # Create a logical vector &#39;keep&#39; indicating which genes to keep
 # &#39;rowSums(counts(dds) &gt;= 10)&#39; calculates the number of samples where the gene count is greater than or equal to 10
 # We want to keep genes that have counts &gt;= 10 in at least &#39;smallestGroupSize&#39; samples
-keep &lt;- rowSums(counts(dds) &gt;= 10) &gt;= smallestGroupSize
+# keep &lt;- rowSums(counts(dds) &gt;= 10) &gt;= smallestGroupSize
 
 # Subset the DESeqDataSet &#39;dds&#39; to keep only the genes that meet the filtering criteria
 # &#39;dds[keep,]&#39; retains only the rows (genes) corresponding to TRUE values in &#39;keep&#39;
-dds &lt;- dds[keep,]
-
-
-# An alternative approach to filter out low count genes
-# This line would subset the DESeqDataSet &#39;dds&#39; to keep only the genes that have a total count greater than 10 across all samples
-# &#39;rowSums(counts(dds)) &gt; 10&#39; creates a logical vector that is TRUE for genes with total counts greater than 10
-# This method effectively removes any gene that has fewer than 10 total reads across all samples
-# However, this approach is not executed in the current code (commented out)
-# dds &lt;- dds[rowSums(counts(dds)) &gt; 10,]</code></pre>
+# dds &lt;- dds[keep,]</code></pre>
 </div>
 <div id="differential-expression-analysis" class="section level2">
 <h2>Differential expression analysis</h2>
@@ -701,8 +701,8 @@ from the average (mean) for each gene.</p>
 <p>Key Concepts of the Dispersions Plot:</p>
 <pre><code>1.  Dispersion: Dispersion measures the variability of gene expression across replicates for a given gene. Higher dispersion means that the expression of a gene varies more between samples. Genes with low mean expression often have higher dispersion, while highly expressed genes tend to have lower dispersion.
 2.  Mean-Dispersion Relationship: The plot shows the estimated dispersions against the mean normalized counts for each gene:
-•   X-axis: Mean expression level (average normalized counts) for each gene.
-•   Y-axis: Estimated dispersion for each gene.
+  - X-axis: Mean expression level (average normalized counts) for each gene.
+  - axis: Estimated dispersion for each gene.
 3.  Fitted Line: DESeq2 fits a curve to model the relationship between mean expression and dispersion. The plot includes a red line representing this fitted model. The model accounts for the expected variability of genes based on their mean expression, allowing for more accurate differential expression analysis.
 4.  Gene-Specific Estimates: The black points in the plot represent the gene-specific dispersion estimates, which reflect the raw variability in the data before shrinkage (correction).
 5.  Shrunken Dispersion Estimates: The blue points represent the final, shrunken dispersion estimates after DESeq2 applies shrinkage to stabilize the dispersion estimates, particularly for lowly expressed genes. Shrinkage helps to prevent overestimation of variability for genes with low counts, which might otherwise lead to false positives in differential expression analysis.</code></pre>
@@ -788,6 +788,7 @@ would calculate a clustering based on the distances between the
 rows/columns of the distance matrix.</p>
 <pre class="r"><code># Calculate the distance matrix based on the transformed counts
 # &#39;dist(t(assay(vsd)))&#39; computes the pairwise distances between samples
+# Here, we apply the dist function to the transpose of the transformed count matrix to get sample-to-sample distances.
 sampleDists &lt;- dist(t(assay(vsd)))
 
 # Convert the distance object to a matrix for easier manipulation and visualization
@@ -972,6 +973,26 @@ index.</p>
 # This gene is likely the most significantly differentially expressed gene
 # &#39;intgroup=&quot;condition&quot;&#39; specifies that the points should be colored/filled by the &quot;condition&quot; variable in the sample data
 plotCounts(dds, gene=which.min(res$padj), intgroup=&quot;condition&quot;)</code></pre>
+</div>
+<div id="volcano-plot" class="section level2">
+<h2>Volcano plot</h2>
+<p>A volcano plot is a commonly used visualization to display the
+results of differential gene expression analysis, such as those
+generated by DESeq2. It provides a clear graphical representation of the
+relationship between the magnitude of change (fold change) and
+statistical significance (p-values) for each gene across the two
+conditions being compared. In a volcano plot, the x-axis typically
+represents the log2 fold change (showing the magnitude of differential
+expression), while the y-axis represents the negative log10 of the
+adjusted p-value (highlighting statistical significance). Genes that are
+significantly differentially expressed appear at the top of the plot
+(low p-values), and those with large fold changes are found further from
+the center on the x-axis. This plot helps researchers quickly identify
+genes that are both statistically significant and biologically
+meaningful, such as those that have both high fold changes and low
+p-values. Genes meeting preset thresholds for significance and fold
+change are often highlighted in distinct colors, facilitating easy
+interpretation.</p>
 <pre class="r"><code>#Make a nice Volcano Plot
 
 # Create a volcano plot to visualize differential expression results
