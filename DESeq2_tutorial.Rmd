@@ -24,7 +24,7 @@ This uses a dataset of 34 samples from Ankylosing Spondylitis Patients and Healt
 
 Click "File" and then "create new project" in RStudio and then "New Directory" and "New Project". Choose a directory to store your R projects in and then enter the name of the sub-directory to create the new project.
 
-```{r setup, include=TRUE}
+```{r setup, include=TRUE , eval=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
@@ -61,7 +61,7 @@ A package that provides color palettes for visualizations, designed for both qua
 An R package for creating publication-ready volcano plots, allowing easy visualization of differential expression results with customizable labels, color schemes, and thresholds.
 
 
-```{r load packages, warn.conflicts=F, quietly=T}
+```{r load packages, eval=FALSE}
 # Load libraries
 if (!requireNamespace("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
@@ -119,7 +119,7 @@ if (!require("EnhancedVolcano")) {
 
 To continue, download the data files that we will be using by running the following two commands in R.
 
-```{r data_download, include=TRUE}
+```{r data_download, include=TRUE , eval=FALSE}
 
 #Download the raw counts from Zenodo
 download.file("https://zenodo.org/records/7576256/files/RNA_CD4_raw_counts.txt.gz", "./RNA_CD4_raw_counts.txt.gz")
@@ -135,7 +135,7 @@ download.file("https://zenodo.org/records/7576256/files/RNA_CD4_raw_counts.txt.g
 ## Reading data into R and preparing for analysis
 Now, we can read in the gene expression data file and check its contents - there should be 60880 rows corresponding to genes, and 34 columns corresponding to samples.
 
-```{r load_data, include=TRUE}
+```{r load_data, include=TRUE , eval=FALSE}
 # Load the count matrix from a gzipped text file
 # 'RNA_CD4_raw_counts.txt.gz' is the file containing raw RNA-seq count data
 # 'header=TRUE' means the first row contains column names (sample names)
@@ -152,7 +152,7 @@ coldata <- read.table("patient_information.txt", header= TRUE, row.names = 1)
 
 We should have a look at the imported data and for the DESeq2 analysis we need to check that the data is in the same order in both tables. For the countdata with have the names in the columns, for the coldata the names are in the rows. We can check that they are identical.
 
-```{r check_data, include=TRUE}
+```{r check_data, include=TRUE , eval=FALSE}
 # Display the first few rows of the counts matrix (gene expression data)
 # 'counts_matrix' should be a matrix where rows are genes and columns are samples
 # This will show the first 6 genes and their counts across the samples
@@ -170,7 +170,7 @@ all(rownames(coldata) == colnames(counts_matrix))
 
 We can see that they dont match by the FALSE outcome, this is due to the presence of the _CD4 on the columns of the countdata and not on the coldata. We can fix this by adding the _CD4 to the rows of the coldata.
 
-```{r fix_data, include=TRUE}
+```{r fix_data, include=TRUE , eval=FALSE}
 # As our sample names have "_CD4" in the count matrix, we append "_CD4" to the row names of 'coldata'
 # 'coldata' is the sample metadata that contains information like condition, batch, etc.
 # We use 'paste0()' to concatenate "_CD4" to the end of each row name
@@ -184,7 +184,7 @@ all(rownames(coldata) == colnames(counts_matrix))
 
 We might also want to check the sequencing depth (number of millions of reads) for each sample.
 
-```{r plot_data, include=TRUE}
+```{r plot_data, include=TRUE , eval=FALSE}
 # Calculate the read depth (total number of reads) for each sample
 # 'counts_matrix' is the matrix of raw RNA-seq counts where rows are genes and columns are samples
 # 'apply' function is used to sum the counts for each sample (summing across rows, i.e., genes)
@@ -208,7 +208,7 @@ With the count matrix, counts_matrix, and the sample information, coldata, we ca
 
 ## Create the DEseq2 Dataset
 
-```{r create-deseq-dataset, include=TRUE}
+```{r create-deseq-dataset, include=TRUE , eval=FALSE}
 # Create a DESeqDataSet object from the counts matrix and metadata
 # countData = counts_matrix: the matrix of raw RNA-seq counts (genes as rows, samples as columns)
 # colData = coldata: the sample metadata (contains info like condition, batch, etc.)
@@ -225,7 +225,7 @@ dds <- DESeqDataSetFromMatrix(countData = counts_matrix,
 
 By default, R will choose a reference level for factors based on alphabetical order. Then, if you never tell the DESeq2 functions which level you want to compare against (e.g. which level represents the control group), the comparisons will be based on the alphabetical order of the levels. There are two solutions: you can either explicitly tell results which comparison to make using the contrast argument (this will be shown later), or you can explicitly set the factors levels.
 
-```{r factors_data, include=TRUE}
+```{r factors_data, include=TRUE , eval=FALSE}
 
 # Display the current levels of the 'condition' variable in the DESeqDataSet object 'dds'
 # This allows you to check how the condition is currently represented in the dataset
@@ -250,7 +250,7 @@ While it is not necessary to pre-filter low count genes before running the DESeq
 Here we perform pre-filtering to keep only rows that have a count of at least 10 for a minimal number of samples. The count of 10 is a reasonable choice for bulk RNA-seq. A recommendation for the minimal number of samples is to specify the smallest group size, e.g. here the minimum batch is 4 samples (set 5). If there are not discrete groups, one can use the minimal number of samples where non-zero counts would be considered interesting. One can also omit this step entirely and just rely on the independent filtering procedures available in results(), either IHW or genefilter.
 
 
-```{r filter-deseq-lowreads, include=TRUE}
+```{r filter-deseq-lowreads, include=TRUE , eval=FALSE}
 # Display a table of the counts of each group in the 'set' column of the sample metadata (coldata)
 # This allows us to see how many samples belong to each group, which helps in deciding the filtering criteria
 table(coldata$set) 
@@ -286,7 +286,7 @@ Results tables are generated using the function results, which extracts a result
 Details about the comparison are printed to the console, directly above the results table. The text, condition treated vs untreated, tells you that the estimates are of the logarithmic fold change log2(treated/untreated).
 
 
-```{r run-deseq-analysis, include=TRUE}
+```{r run-deseq-analysis, include=TRUE , eval=FALSE}
 # Run the DESeq2 analysis pipeline on the DESeqDataSet object 'dds'
 # This function performs the differential expression analysis
 # It includes steps such as:
@@ -303,7 +303,7 @@ dds <- DESeq(dds)
 
 It can be useful to save outputs as we go through the pipeline, here we save the normalised reads. These are the reads counts adjusted for sizeFactors to take into account the quality of the different samples. It should be noted these reads are not adjusted for batch correction effects.
 
-```{r save-normalised-data, include=TRUE}
+```{r save-normalised-data, include=TRUE , eval=FALSE}
 # Create a new directory named "normalized_counts" to store the normalized counts output
 # 'showWarnings = FALSE' suppresses any warning messages if the directory already exists
 dir.create("normalized_counts", showWarnings = FALSE)
@@ -339,7 +339,7 @@ Key Concepts of the Dispersions Plot:
 	5.	Shrunken Dispersion Estimates: The blue points represent the final, shrunken dispersion estimates after DESeq2 applies shrinkage to stabilize the dispersion estimates, particularly for lowly expressed genes. Shrinkage helps to prevent overestimation of variability for genes with low counts, which might otherwise lead to false positives in differential expression analysis.
 
 
-```{r make-dispersion-plot, include=TRUE}
+```{r make-dispersion-plot, include=TRUE , eval=FALSE}
 # Plot the dispersion estimates for each gene in the DESeqDataSet object 'dds'
 # This plot shows the relationship between the mean expression level (log2) and the dispersion (log2)
 # Dispersion is a measure of the variability of the counts for each gene, which is crucial for differential expression analysis
@@ -354,7 +354,7 @@ Shrinkage of effect size (LFC estimates) is useful for visualization and ranking
 
 We provide the dds object and the name or number of the coefficient we want to shrink, where the number refers to the order of the coefficient as it appears in resultsNames(dds).
 
-```{r extract-deseq-analysis, include=TRUE}
+```{r extract-deseq-analysis, include=TRUE , eval=FALSE}
 
 # Extract the names of the coefficients from the DESeqDataSet object 'dds'
 # This will list all the coefficients (contrasts) available for the results, helping you determine the names to use
@@ -379,7 +379,7 @@ resLFC <- lfcShrink(dds, coef = "condition_HC_vs_AS", type = "apeglm")
 
 In DESeq2, the function plotMA shows the log2 fold changes attributable to a given variable over the mean of normalized counts for all the samples in the DESeqDataSet. Points will be colored blue if the adjusted p value is less than 0.1. Points which fall out of the window are plotted as open triangles pointing either up or down.
 
-```{r plot-MA, include=TRUE}
+```{r plot-MA, include=TRUE , eval=FALSE}
 # Plot an MA plot for the differential expression results 'res'
 # The MA plot visualizes the relationship between the log2 fold changes (M) and the mean expression levels (A)
 # 'main="DESeq2"' sets the title of the plot
@@ -400,7 +400,7 @@ DESeq2::plotMA(resLFC, main="DESeq2 LFC", ylim = c(-2, 2))
 In DESeq2, the Variance Stabilizing Transformation (VST) is a method used to transform raw count data from RNA-seq experiments into a form where the variance across samples is stabilized, making the data more suitable for downstream analyses like visualization (e.g., heatmaps, PCA) or clustering.
 
 
-```{r variance-stabilizing-transformation, include=TRUE}
+```{r variance-stabilizing-transformation, include=TRUE , eval=FALSE}
 # Perform variance stabilizing transformation (VST) on the DESeqDataSet object 'dds'
 # This transformation stabilizes the variance across samples, making the data more suitable for clustering and visualization
 # 'blind = FALSE' means that the transformation takes the experimental design into account
@@ -417,7 +417,7 @@ We can use our transformed data to perform sample clustering. Here, we calculate
 We have to provide a hierarchical clustering hc to the heatmap function based on the sample distances, or else the heatmap function would calculate a clustering based on the distances between the rows/columns of the distance matrix.
 
 
-```{r plot-heat-map, include=TRUE}
+```{r plot-heat-map, include=TRUE , eval=FALSE}
 
 # Calculate the distance matrix based on the transformed counts
 # 'dist(t(assay(vsd)))' computes the pairwise distances between samples
@@ -449,7 +449,7 @@ pheatmap(sampleDistMatrix,
 
 Principal Component Analysis (PCA) is a widely used statistical technique that simplifies complex datasets by reducing their dimensionality while retaining most of the variation (or information). In the context of gene expression data (e.g., RNA-seq), PCA helps to visualize and identify patterns, like how samples group together based on their gene expression profiles.
 
-```{r plot-pca, include=TRUE}
+```{r plot-pca, include=TRUE , eval=FALSE}
 
 # Perform PCA on the variance stabilized data 'vsd'
 # 'ntop=500' specifies that only the top 500 most variable genes should be used for the PCA
@@ -478,7 +478,7 @@ ggplot(data, aes(PC1, PC2, shape=sex, colour=set)) +
 Using limma to plot a corrected PCA after running DESeq2 can be useful when you want to account for and remove unwanted variation or batch effects in your data. This process ensures that your PCA results more accurately reflect the biological differences you’re interested in, rather than technical noise or confounding factors. 
 
 
-```{r plot-pca-batch-correction, include=TRUE}
+```{r plot-pca-batch-correction, include=TRUE , eval=FALSE}
 
 # This is for the batch correction
 # Extract the normalized count matrix from the variance stabilized data 'vsd'
@@ -536,7 +536,7 @@ res <- results(dds, name = "condition_HC_vs_AS", alpha = 0.05)
 
 As the alignment was carried out using their ENSMBL ID it can be easier to have the gene name associated befoe saving the data.
 
-```{r extract-dregs, include=TRUE}
+```{r extract-dregs, include=TRUE , eval=FALSE}
 # Create a directory to save DESeq2 results
 dir.create("DESeq2_results/", showWarnings = FALSE)
 
@@ -578,7 +578,7 @@ write.csv(as.data.frame(resOrdered), file = "DESeq2_results/differential_express
 
 ## Plot Heatmap of top 20 Regulated Genes
 
-```{r plot-dregs-heatmap, include=TRUE}
+```{r plot-dregs-heatmap, include=TRUE , eval=FALSE}
 # Select top 20 differentially expressed genes (DEGs) based on adjusted p-values
 # 'resLFC$padj' contains the adjusted p-values; 'order' returns the indices of these p-values in sorted order
 # 'head' selects the first 20 indices, which correspond to the top 20 DEGs
@@ -604,7 +604,7 @@ heatmap(heatmap_data,
 ## Plot counts
 It can also be useful to examine the counts of reads for a single gene across the groups. A simple function for making this plot is plotCounts, which normalizes counts by the estimated size factors (or normalization factors if these were used) and adds a pseudocount of 1/2 to allow for log scale plotting. The counts are grouped by the variables in intgroup, where more than one variable can be specified. Here we specify the gene which had the smallest p value from the results table created above. You can select the gene to plot by rowname or by numeric index.
 
-```{r plotCounts, include=TRUE}
+```{r plotCounts, include=TRUE , eval=FALSE}
 # Plot Counts for the gene with the minimum adjusted p-value
 
 # 'which.min(res$padj)' identifies the index of the gene with the lowest adjusted p-value in the results 'res'
@@ -616,7 +616,7 @@ plotCounts(dds, gene=which.min(res$padj), intgroup="condition")
 
 
 
-```{r volcano-plot, include=TRUE}
+```{r volcano-plot, include=TRUE , eval=FALSE}
 #Make a nice Volcano Plot
 
 # Create a volcano plot to visualize differential expression results
