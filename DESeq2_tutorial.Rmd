@@ -125,10 +125,10 @@ To continue, download the data files that we will be using by running the follow
 download.file("https://zenodo.org/records/7576256/files/RNA_CD4_raw_counts.txt.gz", "./RNA_CD4_raw_counts.txt.gz")
 
 #Download the colData
-#download.file("https://www.cell.com/cms/10.1016/j.xgen.2023.100306/attachment/019ec3b9-0aeb-4ffd-9fcf-c33160576fb4/mmc2.xlsx", "Patient_information.xlsx")
+download.file("https://github.com/jknightlab/DESeq2-Tutorial/blob/888f26382cf01a6033ea6398240f51509edc90ce/patient_information.txt", "patient_information.txt")
 
-#Download the colData
 #To assign gene names to ENSMBL references later we need to download a file that can link the two
+download.file("https://github.com/jknightlab/DESeq2-Tutorial/blob/888f26382cf01a6033ea6398240f51509edc90ce/coding_genes_hg19", "coding_genes_hg19")
 
 ```
 
