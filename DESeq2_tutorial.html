@@ -702,7 +702,7 @@ from the average (mean) for each gene.</p>
 <pre><code>1.  Dispersion: Dispersion measures the variability of gene expression across replicates for a given gene. Higher dispersion means that the expression of a gene varies more between samples. Genes with low mean expression often have higher dispersion, while highly expressed genes tend to have lower dispersion.
 2.  Mean-Dispersion Relationship: The plot shows the estimated dispersions against the mean normalized counts for each gene:
   - X-axis: Mean expression level (average normalized counts) for each gene.
-  - axis: Estimated dispersion for each gene.
+  - Y-axis: Estimated dispersion for each gene.
 3.  Fitted Line: DESeq2 fits a curve to model the relationship between mean expression and dispersion. The plot includes a red line representing this fitted model. The model accounts for the expected variability of genes based on their mean expression, allowing for more accurate differential expression analysis.
 4.  Gene-Specific Estimates: The black points in the plot represent the gene-specific dispersion estimates, which reflect the raw variability in the data before shrinkage (correction).
 5.  Shrunken Dispersion Estimates: The blue points represent the final, shrunken dispersion estimates after DESeq2 applies shrinkage to stabilize the dispersion estimates, particularly for lowly expressed genes. Shrinkage helps to prevent overestimation of variability for genes with low counts, which might otherwise lead to false positives in differential expression analysis.</code></pre>
