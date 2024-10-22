@@ -479,7 +479,22 @@ if (!require(&quot;EnhancedVolcano&quot;)) {
 <div id="download-data" class="section level2">
 <h2>Download Data</h2>
 <p>To continue, download the data files that we will be using by running
-the following two commands in R.</p>
+the following commands in R.</p>
+<div id="rna_cd4_raw_counts.txt.gz" class="section level4">
+<h4>1. RNA_CD4_raw_counts.txt.gz</h4>
+<p>Contains the raw counts for RNA expression from CD4 cells from AS
+patients and HC. They were aligned using STAR and then the reads counted
+using FeatureCount.</p>
+</div>
+<div id="patient_information.txt" class="section level4">
+<h4>2. patient_information.txt</h4>
+<p>Has the colData for the patients and healthy controls, the batch
+information and the sex of the individuals</p>
+</div>
+<div id="coding_genes_hg19" class="section level4">
+<h4>3. coding_genes_hg19</h4>
+<p>Links the Ensembl id to gene name, alignments were done using the
+id’s</p>
 <pre class="r"><code>#Download the raw counts from Zenodo
 download.file(&quot;https://zenodo.org/records/7576256/files/RNA_CD4_raw_counts.txt.gz&quot;, &quot;./RNA_CD4_raw_counts.txt.gz&quot;)
 
@@ -488,6 +503,7 @@ download.file(&quot;https://github.com/jknightlab/DESeq2-Tutorial/blob/888f26382
 
 #To assign gene names to ENSMBL references later we need to download a file that can link the two
 download.file(&quot;https://github.com/jknightlab/DESeq2-Tutorial/blob/888f26382cf01a6033ea6398240f51509edc90ce/coding_genes_hg19&quot;, &quot;coding_genes_hg19&quot;)</code></pre>
+</div>
 </div>
 <div id="reading-data-into-r-and-preparing-for-analysis" class="section level2">
 <h2>Reading data into R and preparing for analysis</h2>
@@ -692,20 +708,42 @@ write.table(as.data.frame(normalized_counts),
 <p>Plotting the dispersion estimates is a useful diagnostic. The
 dispersion plot below is typical, with the final estimates shrunk from
 the gene-wise estimates towards the fitted estimates.</p>
-<p>In DESeq2, the dispersions plot is a key diagnostic plot that
-visualizes the relationship between gene expression mean and dispersion
-(or variability) across samples. This plot is important because DESeq2
+<p>The dispersions plot is a key diagnostic plot that visualizes the
+relationship between gene expression mean and dispersion (or
+variability) across samples. This plot is important because DESeq2
 models gene expression counts using a negative binomial distribution,
 where the dispersion parameter describes how much the counts deviate
 from the average (mean) for each gene.</p>
-<p>Key Concepts of the Dispersions Plot:</p>
-<pre><code>1.  Dispersion: Dispersion measures the variability of gene expression across replicates for a given gene. Higher dispersion means that the expression of a gene varies more between samples. Genes with low mean expression often have higher dispersion, while highly expressed genes tend to have lower dispersion.
-2.  Mean-Dispersion Relationship: The plot shows the estimated dispersions against the mean normalized counts for each gene:
-  - X-axis: Mean expression level (average normalized counts) for each gene.
-  - Y-axis: Estimated dispersion for each gene.
-3.  Fitted Line: DESeq2 fits a curve to model the relationship between mean expression and dispersion. The plot includes a red line representing this fitted model. The model accounts for the expected variability of genes based on their mean expression, allowing for more accurate differential expression analysis.
-4.  Gene-Specific Estimates: The black points in the plot represent the gene-specific dispersion estimates, which reflect the raw variability in the data before shrinkage (correction).
-5.  Shrunken Dispersion Estimates: The blue points represent the final, shrunken dispersion estimates after DESeq2 applies shrinkage to stabilize the dispersion estimates, particularly for lowly expressed genes. Shrinkage helps to prevent overestimation of variability for genes with low counts, which might otherwise lead to false positives in differential expression analysis.</code></pre>
+<ol style="list-style-type: decimal">
+<li>Dispersion: Dispersion measures the variability of gene expression
+across replicates for a given gene. Higher dispersion means that the
+expression of a gene varies more between samples. Genes with low mean
+expression often have higher dispersion, while highly expressed genes
+tend to have lower dispersion.</li>
+<li>Mean-Dispersion Relationship: The plot shows the estimated
+dispersions against the mean normalized counts for each gene:</li>
+</ol>
+<ul>
+<li>X-axis: Mean expression level (average normalized counts) for each
+gene.</li>
+<li>Y-axis: Estimated dispersion for each gene.</li>
+</ul>
+<ol start="3" style="list-style-type: decimal">
+<li>Fitted Line: DESeq2 fits a curve to model the relationship between
+mean expression and dispersion. The plot includes a red line
+representing this fitted model. The model accounts for the expected
+variability of genes based on their mean expression, allowing for more
+accurate differential expression analysis.</li>
+<li>Gene-Specific Estimates: The black points in the plot represent the
+gene-specific dispersion estimates, which reflect the raw variability in
+the data before shrinkage (correction).</li>
+<li>Shrunken Dispersion Estimates: The blue points represent the final,
+shrunken dispersion estimates after DESeq2 applies shrinkage to
+stabilize the dispersion estimates, particularly for lowly expressed
+genes. Shrinkage helps to prevent overestimation of variability for
+genes with low counts, which might otherwise lead to false positives in
+differential expression analysis.</li>
+</ol>
 <pre class="r"><code># Plot the dispersion estimates for each gene in the DESeqDataSet object &#39;dds&#39;
 # This plot shows the relationship between the mean expression level (log2) and the dispersion (log2)
 # Dispersion is a measure of the variability of the counts for each gene, which is crucial for differential expression analysis

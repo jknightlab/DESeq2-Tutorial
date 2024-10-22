@@ -13,7 +13,6 @@ With reference to the offical DESeq2 package
 
 plus additionally;
 
-
 ## Data pre-processing In this practical, we will look at some RNA-Seq data from the Ankylosing Spondylitis Paper
 
 <https://www.cell.com/cell-genomics/fulltext/S2666-979X%2823%2900072-1>
@@ -59,7 +58,6 @@ A package that provides color palettes for visualizations, designed for both qua
 ### 7. EnhancedVolcano:
 
 An R package for creating publication-ready volcano plots, allowing easy visualization of differential expression results with customizable labels, color schemes, and thresholds.
-
 
 ```{r load packages, eval=FALSE}
 # Load libraries
@@ -117,7 +115,19 @@ if (!require("EnhancedVolcano")) {
 
 ## Download Data
 
-To continue, download the data files that we will be using by running the following two commands in R.
+To continue, download the data files that we will be using by running the following commands in R.
+
+#### 1. RNA_CD4_raw_counts.txt.gz
+
+Contains the raw counts for RNA expression from CD4 cells from AS patients and HC. They were aligned using STAR and then the reads counted using FeatureCount.
+
+#### 2. patient_information.txt
+
+Has the colData for the patients and healthy controls, the batch information and the sex of the individuals
+
+#### 3. coding_genes_hg19
+
+Links the Ensembl id to gene name, alignments were done using the id's
 
 ```{r data_download, include=TRUE , eval=FALSE}
 
@@ -133,6 +143,7 @@ download.file("https://github.com/jknightlab/DESeq2-Tutorial/blob/888f26382cf01a
 ```
 
 ## Reading data into R and preparing for analysis
+
 Now, we can read in the gene expression data file and check its contents - there should be 60880 rows corresponding to genes, and 34 columns corresponding to samples.
 
 ```{r load_data, include=TRUE , eval=FALSE}
@@ -148,7 +159,6 @@ counts_matrix <- read.table("RNA_CD4_raw_counts.txt.gz", header= TRUE, row.names
 # 'row.names=1' means the first column in the file is used as the row names (sample names)
 coldata <- read.table("patient_information.txt", header= TRUE, row.names = 1)
 ```
-
 
 We should have a look at the imported data and for the DESeq2 analysis we need to check that the data is in the same order in both tables. For the countdata with have the names in the columns, for the coldata the names are in the rows. We can check that they are identical.
 
@@ -168,7 +178,7 @@ head(coldata)
 all(rownames(coldata) == colnames(counts_matrix))
 ```
 
-We can see that they dont match by the FALSE outcome, this is due to the presence of the _CD4 on the columns of the countdata and not on the coldata. We can fix this by adding the _CD4 to the rows of the coldata.
+We can see that they dont match by the FALSE outcome, this is due to the presence of the \_CD4 on the columns of the countdata and not on the coldata. We can fix this by adding the \_CD4 to the rows of the coldata.
 
 ```{r fix_data, include=TRUE , eval=FALSE}
 # As our sample names have "_CD4" in the count matrix, we append "_CD4" to the row names of 'coldata'
@@ -201,7 +211,6 @@ summary(read.depth)
 barplot(read.depth, las=2, cex.names=0.5, main = "Read Depth", ylab = "Reads (Millions)")
 ```
 
-
 The design indicates how to model the samples, here, that we want to measure the effect of the condition, controlling for batch differences. The two factor variables batch, condition and sex are columns of coldata.
 
 With the count matrix, counts_matrix, and the sample information, coldata, we can construct a DESeqDataSet:
@@ -219,7 +228,6 @@ dds <- DESeqDataSetFromMatrix(countData = counts_matrix,
                               design = ~ set + sex + condition)
 
 ```
-
 
 ## Note on factor levels
 
@@ -248,7 +256,6 @@ dds$condition <- factor(dds$condition, levels = c("AS", "HC"))
 While it is not necessary to pre-filter low count genes before running the DESeq2 functions, there are two reasons which make pre-filtering useful: by removing rows in which there are very few reads, we reduce the memory size of the dds data object, and we increase the speed of count modeling within DESeq2. It can also improve visualizations, as features with no information for differential expression are not plotted in dispersion plots or MA-plots.
 
 Here we perform pre-filtering to keep only rows that have a count of at least 10 for a minimal number of samples. The count of 10 is a reasonable choice for bulk RNA-seq. A recommendation for the minimal number of samples is to specify the smallest group size, e.g. here the minimum batch is 4 samples (set 5). If there are not discrete groups, one can use the minimal number of samples where non-zero counts would be considered interesting. One can also omit this step entirely and just rely on the independent filtering procedures available in results(), either IHW or genefilter.
-
 
 ```{r filter-deseq-lowreads, include=TRUE , eval=FALSE}
 # This line would subset the DESeqDataSet 'dds' to keep only the genes that have a total count greater than 10 across all samples
@@ -286,7 +293,6 @@ Results tables are generated using the function results, which extracts a result
 
 Details about the comparison are printed to the console, directly above the results table. The text, condition treated vs untreated, tells you that the estimates are of the logarithmic fold change log2(treated/untreated).
 
-
 ```{r run-deseq-analysis, include=TRUE , eval=FALSE}
 # Run the DESeq2 analysis pipeline on the DESeqDataSet object 'dds'
 # This function performs the differential expression analysis
@@ -322,23 +328,19 @@ write.table(as.data.frame(normalized_counts),
             file="normalized_counts/normalized_counts.txt", quote=FALSE, sep='\t')
 ```
 
-
 ## Plot dispersions
 
 Plotting the dispersion estimates is a useful diagnostic. The dispersion plot below is typical, with the final estimates shrunk from the gene-wise estimates towards the fitted estimates.
 
-In DESeq2, the dispersions plot is a key diagnostic plot that visualizes the relationship between gene expression mean and dispersion (or variability) across samples. This plot is important because DESeq2 models gene expression counts using a negative binomial distribution, where the dispersion parameter describes how much the counts deviate from the average (mean) for each gene.
+The dispersions plot is a key diagnostic plot that visualizes the relationship between gene expression mean and dispersion (or variability) across samples. This plot is important because DESeq2 models gene expression counts using a negative binomial distribution, where the dispersion parameter describes how much the counts deviate from the average (mean) for each gene.
 
-Key Concepts of the Dispersions Plot:
-
-	1.	Dispersion: Dispersion measures the variability of gene expression across replicates for a given gene. Higher dispersion means that the expression of a gene varies more between samples. Genes with low mean expression often have higher dispersion, while highly expressed genes tend to have lower dispersion.
-	2.	Mean-Dispersion Relationship: The plot shows the estimated dispersions against the mean normalized counts for each gene:
-      - X-axis: Mean expression level (average normalized counts) for each gene.
-      - Y-axis: Estimated dispersion for each gene.
-	3.	Fitted Line: DESeq2 fits a curve to model the relationship between mean expression and dispersion. The plot includes a red line representing this fitted model. The model accounts for the expected variability of genes based on their mean expression, allowing for more accurate differential expression analysis.
-	4.	Gene-Specific Estimates: The black points in the plot represent the gene-specific dispersion estimates, which reflect the raw variability in the data before shrinkage (correction).
-	5.	Shrunken Dispersion Estimates: The blue points represent the final, shrunken dispersion estimates after DESeq2 applies shrinkage to stabilize the dispersion estimates, particularly for lowly expressed genes. Shrinkage helps to prevent overestimation of variability for genes with low counts, which might otherwise lead to false positives in differential expression analysis.
-
+1.  Dispersion: Dispersion measures the variability of gene expression across replicates for a given gene. Higher dispersion means that the expression of a gene varies more between samples. Genes with low mean expression often have higher dispersion, while highly expressed genes tend to have lower dispersion.
+2.  Mean-Dispersion Relationship: The plot shows the estimated dispersions against the mean normalized counts for each gene:
+  - X-axis: Mean expression level (average normalized counts) for each gene.
+  - Y-axis: Estimated dispersion for each gene.
+3.  Fitted Line: DESeq2 fits a curve to model the relationship between mean expression and dispersion. The plot includes a red line representing this fitted model. The model accounts for the expected variability of genes based on their mean expression, allowing for more accurate differential expression analysis.
+4.  Gene-Specific Estimates: The black points in the plot represent the gene-specific dispersion estimates, which reflect the raw variability in the data before shrinkage (correction).
+5.  Shrunken Dispersion Estimates: The blue points represent the final, shrunken dispersion estimates after DESeq2 applies shrinkage to stabilize the dispersion estimates, particularly for lowly expressed genes. Shrinkage helps to prevent overestimation of variability for genes with low counts, which might otherwise lead to false positives in differential expression analysis.
 
 ```{r make-dispersion-plot, include=TRUE , eval=FALSE}
 # Plot the dispersion estimates for each gene in the DESeqDataSet object 'dds'
@@ -347,7 +349,6 @@ Key Concepts of the Dispersions Plot:
 # 'main="Dispersion plot"' sets the title of the plot
 plotDispEsts(dds, main="Dispersion plot")
 ```
-
 
 ## Log fold change shrinkage for visualization and ranking
 
@@ -373,9 +374,11 @@ res <- results(dds, name = "condition_HC_vs_AS", alpha = 0.05)
 resLFC <- lfcShrink(dds, coef = "condition_HC_vs_AS", type = "apeglm")
 
 ```
+
 ## QC DESeq2 data and logFoldChange
 
 ## Exploring and exporting results
+
 ### MA-plot
 
 In DESeq2, the function plotMA shows the log2 fold changes attributable to a given variable over the mean of normalized counts for all the samples in the DESeqDataSet. Points will be colored blue if the adjusted p value is less than 0.1. Points which fall out of the window are plotted as open triangles pointing either up or down.
@@ -395,11 +398,9 @@ DESeq2::plotMA(resLFC, main="DESeq2 LFC", ylim = c(-2, 2))
 
 ```
 
-
 ## Perform variance stabilizing transformation
 
 In DESeq2, the Variance Stabilizing Transformation (VST) is a method used to transform raw count data from RNA-seq experiments into a form where the variance across samples is stabilized, making the data more suitable for downstream analyses like visualization (e.g., heatmaps, PCA) or clustering.
-
 
 ```{r variance-stabilizing-transformation, include=TRUE , eval=FALSE}
 # Perform variance stabilizing transformation (VST) on the DESeqDataSet object 'dds'
@@ -410,13 +411,11 @@ vsd <- vst(dds, blind = FALSE)
 
 ```
 
-
 ## Plot Heatmap of Sample Distances
 
 We can use our transformed data to perform sample clustering. Here, we calculate sample distances with the dist() function applied to the transpose of the transformed count matrix. A heatmap of this distance matrix gives us an overview of similarities and dissimilarities between samples.
 
 We have to provide a hierarchical clustering hc to the heatmap function based on the sample distances, or else the heatmap function would calculate a clustering based on the distances between the rows/columns of the distance matrix.
-
 
 ```{r plot-heat-map, include=TRUE , eval=FALSE}
 
@@ -445,7 +444,6 @@ pheatmap(sampleDistMatrix,
          main = "Uncorrected Sample to Sample Distance")  # Title of the heatmap
 
 ```
-
 
 ## Plot uncorrected PCA
 
@@ -477,8 +475,7 @@ ggplot(data, aes(PC1, PC2, shape=sex, colour=set)) +
 
 ## Plot PCA with Batch Correction
 
-Using limma to plot a corrected PCA after running DESeq2 can be useful when you want to account for and remove unwanted variation or batch effects in your data. This process ensures that your PCA results more accurately reflect the biological differences you’re interested in, rather than technical noise or confounding factors. 
-
+Using limma to plot a corrected PCA after running DESeq2 can be useful when you want to account for and remove unwanted variation or batch effects in your data. This process ensures that your PCA results more accurately reflect the biological differences you’re interested in, rather than technical noise or confounding factors.
 
 ```{r plot-pca-batch-correction, include=TRUE , eval=FALSE}
 
@@ -534,7 +531,7 @@ write.table(as.data.frame(vsd_matrix_corrected),
 
 We earlier extracted the differential results
 
-res <- results(dds, name = "condition_HC_vs_AS", alpha = 0.05)
+res \<- results(dds, name = "condition_HC_vs_AS", alpha = 0.05)
 
 As the alignment was carried out using their ENSMBL ID it can be easier to have the gene name associated befoe saving the data.
 
@@ -602,8 +599,8 @@ heatmap(heatmap_data,
         col = colorRampPalette(c("blue", "white", "red"))(50))
 ```
 
-
 ## Plot counts
+
 It can also be useful to examine the counts of reads for a single gene across the groups. A simple function for making this plot is plotCounts, which normalizes counts by the estimated size factors (or normalization factors if these were used) and adds a pseudocount of 1/2 to allow for log scale plotting. The counts are grouped by the variables in intgroup, where more than one variable can be specified. Here we specify the gene which had the smallest p value from the results table created above. You can select the gene to plot by rowname or by numeric index.
 
 ```{r plotCounts, include=TRUE , eval=FALSE}
@@ -618,7 +615,7 @@ plotCounts(dds, gene=which.min(res$padj), intgroup="condition")
 
 ## Volcano plot
 
-A volcano plot is a commonly used visualization to display the results of differential gene expression analysis, such as those generated by DESeq2. It provides a clear graphical representation of the relationship between the magnitude of change (fold change) and statistical significance (p-values) for each gene across the two conditions being compared. In a volcano plot, the x-axis typically represents the log2 fold change (showing the magnitude of differential expression), while the y-axis represents the negative log10 of the adjusted p-value (highlighting statistical significance). Genes that are significantly differentially expressed appear at the top of the plot (low p-values), and those with large fold changes are found further from the center on the x-axis. This plot helps researchers quickly identify genes that are both statistically significant and biologically meaningful, such as those that have both high fold changes and low p-values. Genes meeting preset thresholds for significance and fold change are often highlighted in distinct colors, facilitating easy interpretation. 
+A volcano plot is a commonly used visualization to display the results of differential gene expression analysis, such as those generated by DESeq2. It provides a clear graphical representation of the relationship between the magnitude of change (fold change) and statistical significance (p-values) for each gene across the two conditions being compared. In a volcano plot, the x-axis typically represents the log2 fold change (showing the magnitude of differential expression), while the y-axis represents the negative log10 of the adjusted p-value (highlighting statistical significance). Genes that are significantly differentially expressed appear at the top of the plot (low p-values), and those with large fold changes are found further from the center on the x-axis. This plot helps researchers quickly identify genes that are both statistically significant and biologically meaningful, such as those that have both high fold changes and low p-values. Genes meeting preset thresholds for significance and fold change are often highlighted in distinct colors, facilitating easy interpretation.
 
 ```{r volcano-plot, include=TRUE , eval=FALSE}
 #Make a nice Volcano Plot
